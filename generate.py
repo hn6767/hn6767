@@ -202,11 +202,24 @@ BUILDINGS = [
     (630, 28, 75, 2, "spire"),
 ]
 
-# Building layer colors (background → foreground)
+# Building layer base colors (background → foreground)
 BUILDING_COLORS = [
-    (30, 25, 55),   # Background: lighter dark purple
-    (20, 18, 42),   # Midground
-    (12, 10, 28),   # Foreground: darkest
+    (35, 30, 60),   # Background: lighter dark purple (hazier)
+    (22, 20, 45),   # Midground
+    (14, 12, 30),   # Foreground: darkest
+]
+
+# Per-building color tints for variation (added to base layer color)
+# Gives each building a slightly different hue
+BUILDING_TINTS = [
+    (0, 0, 0),       # neutral
+    (8, 3, -5),      # warm brownish
+    (-3, 2, 8),      # cool blue
+    (5, 5, 0),       # slightly warm
+    (-2, -2, 5),     # blue tint
+    (6, 0, -3),      # reddish
+    (0, 4, 6),       # teal hint
+    (3, -2, -2),     # warm muted
 ]
 
 # Antenna positions (building index, from foreground layer)
@@ -735,9 +748,14 @@ def draw_sky_gradient(canvas):
             canvas.set_pixel(x, y, (r, g, b))
 
 
+# Maximum y coordinate for stars — must be above the tallest building
+# tallest building = 108px, base_y = HEIGHT - 65, so top = HEIGHT - 173
+# Add margin so stars aren't right at the building edge
+STAR_CEILING_Y = HEIGHT - 185  # ~135px from top
+
+
 def compute_visible_stars(dt):
     """Calculate which stars are visible and their screen positions."""
-    sky_height = HEIGHT - 95
     visible = []
 
     for name, ra, dec, mag in BRIGHT_STARS:
@@ -748,7 +766,8 @@ def compute_visible_stars(dt):
         # Map azimuth to x (0-360 -> 0-WIDTH, with North at center)
         x = int(((az + 180) % 360) / 360.0 * WIDTH)
         # Map altitude to y (90° at top, 0° at horizon)
-        y = int((1 - alt / 90.0) * sky_height)
+        # Use STAR_CEILING_Y so stars stay above the skyline
+        y = int((1 - alt / 90.0) * STAR_CEILING_Y)
 
         # Star size based on magnitude
         size = max(1, int(3 - mag))
@@ -765,11 +784,10 @@ def draw_stars(canvas, visible_stars, frame_idx, rng):
     """Draw twinkling stars."""
     # Background dim stars (random but consistent per seed)
     bg_rng = random.Random(42)
-    sky_height = HEIGHT - 95
 
     for _ in range(200):
         sx = bg_rng.randint(0, WIDTH - 1)
-        sy = bg_rng.randint(0, sky_height - 20)
+        sy = bg_rng.randint(0, STAR_CEILING_Y - 10)
         # Twinkle
         brightness = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(
             frame_idx * 0.3 + sx * 0.1 + sy * 0.17))
@@ -932,29 +950,58 @@ def _draw_building_roof(canvas, bx, bw, top_y, roof_type, color):
     # "flat" = no extra roof
 
 
+def _tinted_color(base, tint_idx):
+    """Apply a tint from BUILDING_TINTS to a base color."""
+    tint = BUILDING_TINTS[tint_idx % len(BUILDING_TINTS)]
+    return (
+        max(0, min(255, base[0] + tint[0])),
+        max(0, min(255, base[1] + tint[1])),
+        max(0, min(255, base[2] + tint[2])),
+    )
+
+
 def draw_cityscape(canvas, frame_idx, rng):
     """Draw the cityscape silhouette with animated windows and varied rooftops."""
     base_y = HEIGHT - 65  # Bottom area reserved for HUD
 
     # Sort by layer so background draws first, foreground last
-    sorted_buildings = sorted(BUILDINGS, key=lambda b: b[3])
+    sorted_buildings = sorted(enumerate(BUILDINGS), key=lambda b: b[1][3])
 
-    for bx, bw, bh, layer, roof_type in sorted_buildings:
-        building_color = BUILDING_COLORS[layer]
+    for bldg_idx, (bx, bw, bh, layer, roof_type) in sorted_buildings:
+        base_color = BUILDING_COLORS[layer]
+        building_color = _tinted_color(base_color, bldg_idx)
         top_y = base_y - bh
 
         # Building body
         canvas.fill_rect(bx, top_y, bw, bh, building_color)
 
+        # Subtle vertical edge highlight on one side (gives depth)
+        edge_color = (
+            min(255, building_color[0] + 6),
+            min(255, building_color[1] + 6),
+            min(255, building_color[2] + 8),
+        )
+        for y in range(top_y, base_y):
+            canvas.set_pixel(bx, y, edge_color)
+
         # Roof shape
         _draw_building_roof(canvas, bx, bw, top_y, roof_type, building_color)
+
+        # Horizontal ledge line at top of building (architectural detail)
+        ledge_color = (
+            min(255, building_color[0] + 10),
+            min(255, building_color[1] + 10),
+            min(255, building_color[2] + 12),
+        )
+        for x in range(bx, bx + bw):
+            canvas.set_pixel(x, top_y, ledge_color)
 
         # Windows (grid pattern)
         win_w = 2 if layer == 0 else 3
         win_h = 3 if layer == 0 else 4
         win_gap_x = 5 if layer == 0 else 6
         win_gap_y = 6 if layer == 0 else 7
-        win_on_pct = 30 if layer == 0 else 45  # background has dimmer/fewer windows
+        win_on_pct = 25 if layer == 0 else (40 if layer == 1 else 50)
 
         for wy in range(top_y + 4, base_y - 4, win_gap_y):
             for wx in range(bx + 3, bx + bw - win_w - 1, win_gap_x):
@@ -967,20 +1014,39 @@ def draw_cityscape(canvas, frame_idx, rng):
 
                 if is_on:
                     tint = hash((wx, wy, 99)) % 40
-                    color = (
-                        min(255, COLOR_WINDOW_ON[0] - tint),
-                        min(255, COLOR_WINDOW_ON[1] - tint // 2),
-                        COLOR_WINDOW_ON[2],
-                    )
+                    # Vary window color: some warm yellow, some warm orange
+                    warm_shift = hash((wx, wy, 77)) % 3
+                    if warm_shift == 0:
+                        color = (
+                            min(255, COLOR_WINDOW_ON[0] - tint),
+                            min(255, COLOR_WINDOW_ON[1] - tint // 2),
+                            COLOR_WINDOW_ON[2],
+                        )
+                    elif warm_shift == 1:
+                        # Warmer orange
+                        color = (
+                            min(255, 255 - tint),
+                            min(255, 180 - tint),
+                            60,
+                        )
+                    else:
+                        # Cooler white-ish
+                        color = (
+                            min(255, 220 - tint),
+                            min(255, 210 - tint),
+                            min(255, 160 - tint // 2),
+                        )
                     # Background windows are dimmer
                     if layer == 0:
-                        color = (color[0] * 3 // 4, color[1] * 3 // 4, color[2] * 3 // 4)
+                        color = (color[0] * 2 // 3, color[1] * 2 // 3, color[2] * 2 // 3)
+                    elif layer == 1:
+                        color = (color[0] * 5 // 6, color[1] * 5 // 6, color[2] * 5 // 6)
                     canvas.fill_rect(wx, wy, win_w, win_h, color)
                 else:
                     win_off = (
-                        building_color[0] + 8,
-                        building_color[1] + 8,
-                        building_color[2] + 12,
+                        building_color[0] + 6,
+                        building_color[1] + 6,
+                        building_color[2] + 10,
                     )
                     canvas.fill_rect(wx, wy, win_w, win_h, win_off)
 
