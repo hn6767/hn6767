@@ -912,12 +912,16 @@ def draw_moon(canvas, dt, frame_idx):
         for dx in range(-radius, radius + 1):
             dist_sq = dx * dx + dy * dy
             if dist_sq <= radius * radius:
-                # Phase shadow
+                # Phase shadow (Northern Hemisphere view)
+                # Waxing: shadow on left, receding rightward as phase grows
+                # Waning: shadow on right, growing leftward as phase grows
                 if phase_val < 0.5:
-                    terminator = (2 * phase_val - 0.5) * 2 * radius
+                    # Waxing: at phase 0 everything shadow, at 0.5 nothing shadow
+                    terminator = radius * (1 - 4 * phase_val)
                     in_shadow = dx < terminator
                 else:
-                    terminator = (1.5 - 2 * phase_val) * 2 * radius
+                    # Waning: at phase 0.5 nothing shadow, at 1.0 everything shadow
+                    terminator = radius * (3 - 4 * phase_val)
                     in_shadow = dx > terminator
 
                 if in_shadow:
