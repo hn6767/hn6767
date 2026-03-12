@@ -203,23 +203,25 @@ BUILDINGS = [
 ]
 
 # Building layer base colors (background → foreground)
+# Blue/indigo tones like the pixel art inspo, not near-black
 BUILDING_COLORS = [
-    (35, 30, 60),   # Background: lighter dark purple (hazier)
-    (22, 20, 45),   # Midground
-    (14, 12, 30),   # Foreground: darkest
+    (55, 55, 100),   # Background: hazy light indigo
+    (35, 38, 80),    # Midground: medium blue-indigo
+    (18, 22, 55),    # Foreground: deep navy-blue
 ]
 
 # Per-building color tints for variation (added to base layer color)
-# Gives each building a slightly different hue
 BUILDING_TINTS = [
     (0, 0, 0),       # neutral
-    (8, 3, -5),      # warm brownish
-    (-3, 2, 8),      # cool blue
-    (5, 5, 0),       # slightly warm
-    (-2, -2, 5),     # blue tint
-    (6, 0, -3),      # reddish
-    (0, 4, 6),       # teal hint
-    (3, -2, -2),     # warm muted
+    (10, 4, -6),     # warm brownish
+    (-5, 3, 12),     # cool blue
+    (6, 6, -2),      # slightly warm
+    (-4, -2, 8),     # blue tint
+    (8, 0, -4),      # warm muted
+    (-2, 5, 10),     # teal hint
+    (4, -3, -3),     # earthy
+    (-6, 0, 14),     # strong blue
+    (12, 6, 0),      # warm amber
 ]
 
 # Antenna positions (building index, from foreground layer)
@@ -801,7 +803,7 @@ def draw_stars(canvas, visible_stars, frame_idx, rng):
         )
         canvas.set_pixel(sx, sy, color)
 
-    # Named bright stars
+    # Named bright stars — cross/diamond sparkle shapes
     for star in visible_stars:
         # Twinkle effect
         phase = frame_idx * 0.2 + hash(star["name"]) * 0.1
@@ -816,23 +818,31 @@ def draw_stars(canvas, visible_stars, frame_idx, rng):
         size = star["size"]
         x, y = star["x"], star["y"]
 
+        # Center pixel always bright
+        canvas.set_pixel(x, y, color)
+
         if size >= 3:
-            # Large star: cross pattern
-            canvas.set_pixel(x, y, color)
-            for d in range(1, size):
-                alpha = 1.0 - d / size
-                canvas.blend_pixel(x + d, y, color, alpha * twinkle)
-                canvas.blend_pixel(x - d, y, color, alpha * twinkle)
-                canvas.blend_pixel(x, y + d, color, alpha * twinkle)
-                canvas.blend_pixel(x, y - d, color, alpha * twinkle)
+            # Large star: 4-pointed cross sparkle
+            arm_len = size + 1
+            for d in range(1, arm_len + 1):
+                alpha = (1.0 - d / (arm_len + 1)) * twinkle
+                canvas.blend_pixel(x + d, y, color, alpha)
+                canvas.blend_pixel(x - d, y, color, alpha)
+                canvas.blend_pixel(x, y + d, color, alpha)
+                canvas.blend_pixel(x, y - d, color, alpha)
+            # Small diagonal accents
+            canvas.blend_pixel(x + 1, y + 1, color, 0.25 * twinkle)
+            canvas.blend_pixel(x - 1, y - 1, color, 0.25 * twinkle)
+            canvas.blend_pixel(x + 1, y - 1, color, 0.25 * twinkle)
+            canvas.blend_pixel(x - 1, y + 1, color, 0.25 * twinkle)
         elif size >= 2:
-            canvas.set_pixel(x, y, color)
-            canvas.blend_pixel(x + 1, y, color, 0.5 * twinkle)
-            canvas.blend_pixel(x - 1, y, color, 0.5 * twinkle)
-            canvas.blend_pixel(x, y + 1, color, 0.5 * twinkle)
-            canvas.blend_pixel(x, y - 1, color, 0.5 * twinkle)
-        else:
-            canvas.set_pixel(x, y, color)
+            # Medium star: small cross
+            for d in range(1, 3):
+                alpha = (1.0 - d / 3) * twinkle
+                canvas.blend_pixel(x + d, y, color, alpha)
+                canvas.blend_pixel(x - d, y, color, alpha)
+                canvas.blend_pixel(x, y + d, color, alpha)
+                canvas.blend_pixel(x, y - d, color, alpha)
 
 
 def draw_constellation_lines(canvas, visible_stars):
@@ -863,51 +873,76 @@ def draw_star_labels(canvas, visible_stars):
 
 
 def draw_moon(canvas, dt, frame_idx):
-    """Draw the moon with its current phase."""
+    """Draw a prominent moon — always visible for aesthetics."""
     alt, az = moon_position(dt, LATITUDE, LONGITUDE)
 
+    # If the moon is below horizon, place it at a nice decorative position
     if alt < 0:
-        return  # Moon below horizon
+        mx = WIDTH // 2 + 40
+        my = 45
+    else:
+        mx = int(((az + 180) % 360) / 360.0 * WIDTH)
+        my = int((1 - alt / 90.0) * STAR_CEILING_Y)
+        mx = max(30, min(WIDTH - 30, mx))
+        my = max(30, min(STAR_CEILING_Y - 30, my))
 
-    sky_height = HEIGHT - 95
-    mx = int(((az + 180) % 360) / 360.0 * WIDTH)
-    my = int((1 - alt / 90.0) * sky_height)
+    radius = 22  # Larger, more prominent moon
+    phase_val, illumination = moon_phase(dt)
 
-    # Clamp to visible area
-    mx = max(20, min(WIDTH - 20, mx))
-    my = max(20, min(sky_height - 20, my))
-
-    radius = 12
-    phase, illumination = moon_phase(dt)
-
-    # Draw moon glow
-    for dy in range(-radius - 6, radius + 7):
-        for dx in range(-radius - 6, radius + 7):
+    # Outer glow (large, soft)
+    glow_color = (180, 200, 255)  # Blue-white glow
+    for dy in range(-radius - 20, radius + 21):
+        for dx in range(-radius - 20, radius + 21):
             dist = math.sqrt(dx * dx + dy * dy)
-            if dist < radius + 6:
-                glow = max(0, 1 - dist / (radius + 6))
-                canvas.blend_pixel(mx + dx, my + dy, COLOR_MOON, glow * 0.15)
+            if dist < radius + 20:
+                glow = max(0, 1 - dist / (radius + 20))
+                canvas.blend_pixel(mx + dx, my + dy, glow_color, glow * glow * 0.12)
 
-    # Draw moon body
+    # Inner glow (brighter ring)
+    for dy in range(-radius - 8, radius + 9):
+        for dx in range(-radius - 8, radius + 9):
+            dist = math.sqrt(dx * dx + dy * dy)
+            if radius < dist < radius + 8:
+                glow = max(0, 1 - (dist - radius) / 8)
+                canvas.blend_pixel(mx + dx, my + dy, COLOR_MOON, glow * 0.25)
+
+    # Moon body with surface detail
+    moon_detail_rng = random.Random(12345)
     for dy in range(-radius, radius + 1):
         for dx in range(-radius, radius + 1):
-            if dx * dx + dy * dy <= radius * radius:
-                # Determine if this pixel is in shadow based on phase
-                # phase 0 = new (all shadow), 0.25 = first quarter, 0.5 = full, etc.
-                if phase < 0.5:
-                    # Waxing: shadow on the left
-                    terminator = (2 * phase - 0.5) * 2 * radius
-                    if dx < terminator:
-                        canvas.set_pixel(mx + dx, my + dy, COLOR_MOON_SHADOW)
-                    else:
-                        canvas.set_pixel(mx + dx, my + dy, COLOR_MOON)
+            dist_sq = dx * dx + dy * dy
+            if dist_sq <= radius * radius:
+                # Phase shadow
+                if phase_val < 0.5:
+                    terminator = (2 * phase_val - 0.5) * 2 * radius
+                    in_shadow = dx < terminator
                 else:
-                    # Waning: shadow on the right
-                    terminator = (1.5 - 2 * phase) * 2 * radius
-                    if dx > terminator:
-                        canvas.set_pixel(mx + dx, my + dy, COLOR_MOON_SHADOW)
-                    else:
-                        canvas.set_pixel(mx + dx, my + dy, COLOR_MOON)
+                    terminator = (1.5 - 2 * phase_val) * 2 * radius
+                    in_shadow = dx > terminator
+
+                if in_shadow:
+                    canvas.set_pixel(mx + dx, my + dy, COLOR_MOON_SHADOW)
+                else:
+                    # Surface detail: subtle darker patches (craters)
+                    base = COLOR_MOON
+                    detail_seed = ((dx + 50) * 73 + (dy + 50) * 37) % 100
+                    if detail_seed < 12:
+                        # Darker crater patches
+                        base = (220, 225, 200)
+                    elif detail_seed < 18:
+                        base = (235, 235, 210)
+                    canvas.set_pixel(mx + dx, my + dy, base)
+
+                    # Edge shading for spherical look
+                    edge_dist = math.sqrt(dist_sq) / radius
+                    if edge_dist > 0.85:
+                        darken = (edge_dist - 0.85) / 0.15 * 0.3
+                        px = canvas.get_pixel(mx + dx, my + dy)
+                        canvas.set_pixel(mx + dx, my + dy, (
+                            int(px[0] * (1 - darken)),
+                            int(px[1] * (1 - darken)),
+                            int(px[2] * (1 - darken)),
+                        ))
 
 
 def _draw_building_roof(canvas, bx, bw, top_y, roof_type, color):
@@ -975,26 +1010,72 @@ def draw_cityscape(canvas, frame_idx, rng):
         # Building body
         canvas.fill_rect(bx, top_y, bw, bh, building_color)
 
-        # Subtle vertical edge highlight on one side (gives depth)
-        edge_color = (
-            min(255, building_color[0] + 6),
-            min(255, building_color[1] + 6),
-            min(255, building_color[2] + 8),
+        # Left edge highlight (light source from left)
+        edge_light = (
+            min(255, building_color[0] + 8),
+            min(255, building_color[1] + 8),
+            min(255, building_color[2] + 12),
+        )
+        # Right edge shadow
+        edge_dark = (
+            max(0, building_color[0] - 5),
+            max(0, building_color[1] - 5),
+            max(0, building_color[2] - 5),
         )
         for y in range(top_y, base_y):
-            canvas.set_pixel(bx, y, edge_color)
+            canvas.set_pixel(bx, y, edge_light)
+            canvas.set_pixel(bx + 1, y, edge_light)
+            canvas.set_pixel(bx + bw - 1, y, edge_dark)
 
         # Roof shape
         _draw_building_roof(canvas, bx, bw, top_y, roof_type, building_color)
 
-        # Horizontal ledge line at top of building (architectural detail)
+        # Horizontal ledge lines (top + mid-building band)
         ledge_color = (
-            min(255, building_color[0] + 10),
-            min(255, building_color[1] + 10),
-            min(255, building_color[2] + 12),
+            min(255, building_color[0] + 12),
+            min(255, building_color[1] + 12),
+            min(255, building_color[2] + 15),
         )
         for x in range(bx, bx + bw):
             canvas.set_pixel(x, top_y, ledge_color)
+        # Mid-building accent band (for taller buildings)
+        if bh > 50 and layer >= 1:
+            band_y = top_y + bh // 3
+            for x in range(bx, bx + bw):
+                canvas.set_pixel(x, band_y, ledge_color)
+
+        # Rooftop detail structures (only on flat/stepped mid+foreground buildings)
+        if roof_type in ("flat", "stepped") and layer >= 1 and bw > 20:
+            detail_seed = hash((bx, bw, bh)) % 5
+            detail_color = (
+                min(255, building_color[0] + 4),
+                min(255, building_color[1] + 4),
+                min(255, building_color[2] + 6),
+            )
+            roof_top = top_y if roof_type == "flat" else top_y - 12
+            if detail_seed == 0:
+                # Small rooftop box (AC unit)
+                box_w = min(8, bw // 4)
+                canvas.fill_rect(bx + 3, roof_top - 5, box_w, 5, detail_color)
+            elif detail_seed == 1:
+                # Water tank (cylinder approximation)
+                tank_w = min(6, bw // 5)
+                tank_h = 8
+                cx = bx + bw - tank_w - 4
+                canvas.fill_rect(cx, roof_top - tank_h, tank_w, tank_h, detail_color)
+                # Tank stand legs
+                canvas.set_pixel(cx + 1, roof_top, building_color)
+                canvas.set_pixel(cx + tank_w - 2, roof_top, building_color)
+            elif detail_seed == 2:
+                # Small antenna/pole
+                pole_x = bx + bw // 3
+                for py in range(roof_top - 7, roof_top):
+                    canvas.set_pixel(pole_x, py, detail_color)
+            elif detail_seed == 3 and bw > 30:
+                # Two small rooftop boxes
+                box_w = min(6, bw // 5)
+                canvas.fill_rect(bx + 3, roof_top - 4, box_w, 4, detail_color)
+                canvas.fill_rect(bx + bw - box_w - 3, roof_top - 6, box_w, 6, detail_color)
 
         # Windows (grid pattern)
         win_w = 2 if layer == 0 else 3
