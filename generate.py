@@ -36,10 +36,11 @@ FRAME_DELAY_MS = 120  # ~8 fps
 PIXEL_SCALE = 2
 
 # Color palette (retro/neon)
-COLOR_SKY_TOP = (8, 8, 32)
-COLOR_SKY_MID = (16, 12, 48)
-COLOR_SKY_BOTTOM = (32, 20, 64)
-COLOR_HORIZON_GLOW = (80, 40, 100)
+COLOR_SKY_TOP = (10, 10, 40)       # Deep navy
+COLOR_SKY_MID1 = (25, 20, 70)      # Dark indigo
+COLOR_SKY_MID2 = (60, 40, 110)     # Purple
+COLOR_SKY_MID3 = (100, 50, 130)    # Lavender-purple
+COLOR_HORIZON_GLOW = (160, 60, 120) # Pink-magenta glow
 COLOR_STAR = (255, 255, 240)
 COLOR_STAR_DIM = (180, 180, 200)
 COLOR_MOON = (255, 250, 220)
@@ -157,20 +158,59 @@ CONSTELLATION_LINES = [
     ("Vega", "Deneb"), ("Vega", "Altair"), ("Deneb", "Altair"),
 ]
 
-# ─── Cityscape buildings (x, width, height) ────────────────────────────────
+# ─── Cityscape buildings ───────────────────────────────────────────────────
+# Each building: (x, width, height, layer, roof_type)
+#   layer: 0=background (lighter), 1=midground, 2=foreground (darkest)
+#   roof_type: "flat", "pointed", "spire", "stepped", "dome"
 
 BUILDINGS = [
-    (0, 30, 55), (25, 20, 45), (42, 38, 70), (76, 24, 48),
-    (96, 16, 36), (108, 35, 65), (138, 28, 50), (162, 20, 40),
-    (178, 42, 75), (216, 24, 44), (236, 30, 58), (262, 16, 32),
-    (274, 38, 68), (308, 24, 48), (328, 20, 55), (344, 35, 44),
-    (375, 28, 72), (399, 16, 36), (411, 38, 64), (445, 24, 52),
-    (465, 30, 40), (491, 20, 60), (507, 42, 68), (545, 24, 48),
-    (565, 16, 36), (577, 38, 55), (611, 28, 44), (635, 20, 52),
+    # Background layer (shorter, lighter)
+    (0, 35, 40, 0, "flat"),     (30, 25, 50, 0, "stepped"),
+    (55, 40, 35, 0, "flat"),    (90, 20, 55, 0, "pointed"),
+    (108, 45, 42, 0, "flat"),   (150, 22, 48, 0, "flat"),
+    (170, 30, 38, 0, "dome"),   (200, 50, 45, 0, "flat"),
+    (248, 25, 52, 0, "pointed"),(270, 40, 36, 0, "flat"),
+    (310, 28, 46, 0, "stepped"),(338, 35, 40, 0, "flat"),
+    (370, 22, 55, 0, "pointed"),(390, 45, 38, 0, "flat"),
+    (432, 30, 50, 0, "dome"),   (460, 25, 42, 0, "flat"),
+    (485, 40, 36, 0, "flat"),   (522, 20, 55, 0, "pointed"),
+    (540, 35, 44, 0, "stepped"),(575, 45, 38, 0, "flat"),
+    (618, 25, 50, 0, "pointed"),
+
+    # Midground layer
+    (5, 28, 60, 1, "pointed"),  (32, 35, 70, 1, "spire"),
+    (65, 22, 52, 1, "flat"),    (85, 40, 78, 1, "stepped"),
+    (122, 18, 55, 1, "flat"),   (138, 32, 85, 1, "spire"),
+    (168, 25, 62, 1, "pointed"),(190, 38, 72, 1, "flat"),
+    (226, 20, 58, 1, "flat"),   (244, 42, 80, 1, "pointed"),
+    (284, 25, 55, 1, "flat"),   (308, 30, 90, 1, "spire"),
+    (336, 22, 60, 1, "flat"),   (356, 36, 75, 1, "stepped"),
+    (390, 28, 65, 1, "pointed"),(416, 40, 82, 1, "spire"),
+    (454, 22, 55, 1, "flat"),   (474, 35, 70, 1, "pointed"),
+    (508, 30, 78, 1, "stepped"),(536, 24, 58, 1, "flat"),
+    (558, 38, 85, 1, "spire"),  (594, 22, 62, 1, "pointed"),
+    (614, 30, 72, 1, "flat"),
+
+    # Foreground layer (tallest, darkest)
+    (10, 32, 75, 2, "flat"),    (48, 44, 95, 2, "spire"),
+    (98, 26, 65, 2, "pointed"), (130, 50, 105, 2, "stepped"),
+    (185, 30, 70, 2, "flat"),   (220, 48, 100, 2, "spire"),
+    (275, 28, 68, 2, "pointed"),(310, 42, 92, 2, "flat"),
+    (360, 32, 80, 2, "spire"),  (400, 50, 108, 2, "stepped"),
+    (458, 26, 72, 2, "flat"),   (490, 44, 98, 2, "spire"),
+    (540, 30, 65, 2, "pointed"),(578, 48, 88, 2, "flat"),
+    (630, 28, 75, 2, "spire"),
 ]
 
-# Antenna positions (building index, relative x offset)
-ANTENNA_BUILDINGS = [2, 8, 12, 16, 22]
+# Building layer colors (background → foreground)
+BUILDING_COLORS = [
+    (30, 25, 55),   # Background: lighter dark purple
+    (20, 18, 42),   # Midground
+    (12, 10, 28),   # Foreground: darkest
+]
+
+# Antenna positions (building index, from foreground layer)
+ANTENNA_BUILDINGS = [1, 3, 5, 8, 11, 14]
 
 
 # ─── Astronomical calculations ──────────────────────────────────────────────
@@ -650,24 +690,39 @@ def encode_gif(frames, palette, delay_ms=80, loop=0):
 
 # ─── Scene rendering ────────────────────────────────────────────────────────
 
+def _lerp_color(c1, c2, t):
+    """Linearly interpolate between two RGB colors."""
+    return (
+        int(c1[0] * (1 - t) + c2[0] * t),
+        int(c1[1] * (1 - t) + c2[1] * t),
+        int(c1[2] * (1 - t) + c2[2] * t),
+    )
+
+
 def draw_sky_gradient(canvas):
-    """Draw the night sky gradient background."""
+    """Draw the night sky gradient background with multi-stop gradient."""
     city_y = canvas.height - 95  # Leave room for cityscape + HUD
+
+    # Gradient stops: (position 0-1, color)
+    stops = [
+        (0.0, COLOR_SKY_TOP),
+        (0.3, COLOR_SKY_MID1),
+        (0.55, COLOR_SKY_MID2),
+        (0.75, COLOR_SKY_MID3),
+        (1.0, COLOR_HORIZON_GLOW),
+    ]
 
     for y in range(city_y):
         t = y / city_y
-        if t < 0.5:
-            # Top half: dark to mid
-            s = t / 0.5
-            r = int(COLOR_SKY_TOP[0] * (1 - s) + COLOR_SKY_MID[0] * s)
-            g = int(COLOR_SKY_TOP[1] * (1 - s) + COLOR_SKY_MID[1] * s)
-            b = int(COLOR_SKY_TOP[2] * (1 - s) + COLOR_SKY_MID[2] * s)
+
+        # Find the two stops we're between
+        for i in range(len(stops) - 1):
+            if t <= stops[i + 1][0]:
+                local_t = (t - stops[i][0]) / (stops[i + 1][0] - stops[i][0])
+                r, g, b = _lerp_color(stops[i][1], stops[i + 1][1], local_t)
+                break
         else:
-            # Bottom half: mid to horizon glow
-            s = (t - 0.5) / 0.5
-            r = int(COLOR_SKY_MID[0] * (1 - s) + COLOR_HORIZON_GLOW[0] * s)
-            g = int(COLOR_SKY_MID[1] * (1 - s) + COLOR_HORIZON_GLOW[1] * s)
-            b = int(COLOR_SKY_MID[2] * (1 - s) + COLOR_HORIZON_GLOW[2] * s)
+            r, g, b = stops[-1][1]
 
         # Quantize to pixel art steps
         step = PIXEL_SCALE * 2
@@ -837,49 +892,107 @@ def draw_moon(canvas, dt, frame_idx):
                         canvas.set_pixel(mx + dx, my + dy, COLOR_MOON)
 
 
+def _draw_building_roof(canvas, bx, bw, top_y, roof_type, color):
+    """Draw a shaped roof on a building."""
+    if roof_type == "pointed":
+        # Triangular peak in the center
+        peak_h = min(bw // 2, 12)
+        cx = bx + bw // 2
+        for dy in range(peak_h):
+            span = int(bw / 2 * (1 - dy / peak_h))
+            for dx in range(-span, span + 1):
+                canvas.set_pixel(cx + dx, top_y - dy, color)
+    elif roof_type == "spire":
+        # Narrow spire rising from center
+        spire_h = min(bw, 18)
+        cx = bx + bw // 2
+        for dy in range(spire_h):
+            t = dy / spire_h
+            half_w = max(0, int((1 - t) * bw // 4))
+            for dx in range(-half_w, half_w + 1):
+                canvas.set_pixel(cx + dx, top_y - dy, color)
+    elif roof_type == "stepped":
+        # Stepped/tiered top
+        step_w = bw // 3
+        step_h = 6
+        # First step
+        canvas.fill_rect(bx + step_w // 2, top_y - step_h,
+                         bw - step_w, step_h, color)
+        # Second step (narrower)
+        canvas.fill_rect(bx + step_w, top_y - step_h * 2,
+                         bw - step_w * 2, step_h, color)
+    elif roof_type == "dome":
+        # Rounded dome
+        cx = bx + bw // 2
+        dome_r = bw // 3
+        for dy in range(dome_r):
+            span = int(math.sqrt(max(0, dome_r * dome_r - dy * dy)))
+            for dx in range(-span, span + 1):
+                canvas.set_pixel(cx + dx, top_y - dy, color)
+    # "flat" = no extra roof
+
+
 def draw_cityscape(canvas, frame_idx, rng):
-    """Draw the cityscape silhouette with animated windows."""
+    """Draw the cityscape silhouette with animated windows and varied rooftops."""
     base_y = HEIGHT - 65  # Bottom area reserved for HUD
 
-    for bx, bw, bh in BUILDINGS:
+    # Sort by layer so background draws first, foreground last
+    sorted_buildings = sorted(BUILDINGS, key=lambda b: b[3])
+
+    for bx, bw, bh, layer, roof_type in sorted_buildings:
+        building_color = BUILDING_COLORS[layer]
+        top_y = base_y - bh
+
         # Building body
-        canvas.fill_rect(bx, base_y - bh, bw, bh, COLOR_BUILDING)
+        canvas.fill_rect(bx, top_y, bw, bh, building_color)
+
+        # Roof shape
+        _draw_building_roof(canvas, bx, bw, top_y, roof_type, building_color)
 
         # Windows (grid pattern)
-        win_w = 3
-        win_h = 4
-        win_gap_x = 6
-        win_gap_y = 7
+        win_w = 2 if layer == 0 else 3
+        win_h = 3 if layer == 0 else 4
+        win_gap_x = 5 if layer == 0 else 6
+        win_gap_y = 6 if layer == 0 else 7
+        win_on_pct = 30 if layer == 0 else 45  # background has dimmer/fewer windows
 
-        for wy in range(base_y - bh + 4, base_y - 4, win_gap_y):
+        for wy in range(top_y + 4, base_y - 4, win_gap_y):
             for wx in range(bx + 3, bx + bw - win_w - 1, win_gap_x):
-                # Each window has a consistent random on/off state that can change
                 win_seed = hash((wx, wy)) % 100
-                # Some windows flicker
-                is_on = win_seed < 40
+                is_on = win_seed < win_on_pct
                 if win_seed < 5:
-                    is_on = (frame_idx // 6) % 2 == 0  # Flickering window
+                    is_on = (frame_idx // 6) % 2 == 0
                 elif win_seed < 8:
-                    is_on = (frame_idx // 12) % 2 == 0  # Slow flicker
+                    is_on = (frame_idx // 12) % 2 == 0
 
                 if is_on:
-                    # Random warm tint
                     tint = hash((wx, wy, 99)) % 40
                     color = (
                         min(255, COLOR_WINDOW_ON[0] - tint),
                         min(255, COLOR_WINDOW_ON[1] - tint // 2),
                         COLOR_WINDOW_ON[2],
                     )
+                    # Background windows are dimmer
+                    if layer == 0:
+                        color = (color[0] * 3 // 4, color[1] * 3 // 4, color[2] * 3 // 4)
                     canvas.fill_rect(wx, wy, win_w, win_h, color)
                 else:
-                    canvas.fill_rect(wx, wy, win_w, win_h, COLOR_WINDOW_OFF)
+                    win_off = (
+                        building_color[0] + 8,
+                        building_color[1] + 8,
+                        building_color[2] + 12,
+                    )
+                    canvas.fill_rect(wx, wy, win_w, win_h, win_off)
 
-    # Antenna lights on tall buildings
+    # Antenna lights on tall foreground buildings
+    fg_buildings = [b for b in BUILDINGS if b[3] == 2]
     for bidx in ANTENNA_BUILDINGS:
-        if bidx < len(BUILDINGS):
-            bx, bw, bh = BUILDINGS[bidx]
+        if bidx < len(fg_buildings):
+            bx, bw, bh, _, roof_type = fg_buildings[bidx]
             ax = bx + bw // 2
-            ay = base_y - bh - 5
+            # Adjust for roof height
+            extra = 8 if roof_type in ("spire", "pointed") else 5
+            ay = base_y - bh - extra
 
             # Antenna pole
             for y in range(ay, ay + 5):
