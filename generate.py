@@ -143,6 +143,10 @@ BRIGHT_STARS = [
     ("Merak", 11.031, 56.38, 2.37),
     ("Phecda", 11.897, 53.69, 2.44),
     ("Megrez", 12.257, 57.03, 3.31),
+    # Additional stars for better March sky coverage
+    ("Denebola", 11.818, 14.57, 2.14),  # Leo's tail — completes Leo
+    ("Alphard", 9.460, -8.66, 1.98),    # Hydra — "The Solitary One"
+    ("Alhena", 6.629, 16.40, 1.93),     # Gemini's foot
 ]
 
 # ─── Constellation lines (pairs of star names to connect) ───────────────────
@@ -154,7 +158,11 @@ CONSTELLATION_LINES = [
     # Orion (partial)
     ("Betelgeuse", "Bellatrix"), ("Betelgeuse", "Alnilam"),
     ("Bellatrix", "Alnilam"), ("Alnilam", "Alnitak"), ("Alnilam", "Rigel"),
-    # Summer Triangle
+    # Leo (the dominant March constellation)
+    ("Regulus", "Denebola"),
+    # Gemini
+    ("Castor", "Pollux"), ("Pollux", "Alhena"), ("Castor", "Alhena"),
+    # Summer Triangle (only draws when stars are above horizon)
     ("Vega", "Deneb"), ("Vega", "Altair"), ("Deneb", "Altair"),
 ]
 
