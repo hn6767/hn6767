@@ -798,11 +798,12 @@ def draw_stars(canvas, visible_stars, frame_idx, rng):
     for _ in range(200):
         sx = bg_rng.randint(0, WIDTH - 1)
         sy = bg_rng.randint(0, STAR_CEILING_Y - 10)
-        # Twinkle
-        brightness = 0.3 + 0.7 * (0.5 + 0.5 * math.sin(
-            frame_idx * 0.3 + sx * 0.1 + sy * 0.17))
-        if bg_rng.random() < 0.1:
-            brightness *= 0.3  # Occasional flicker
+        # Twinkle — varied speeds make field feel alive
+        speed = 0.25 + (sx * 7 + sy * 3) % 11 * 0.04  # 0.25–0.69
+        brightness = 0.2 + 0.8 * (0.5 + 0.5 * math.sin(
+            frame_idx * speed + sx * 0.1 + sy * 0.17))
+        if bg_rng.random() < 0.12:
+            brightness *= 0.2  # Occasional deep flicker
 
         color = (
             int(COLOR_STAR_DIM[0] * brightness),
@@ -813,9 +814,35 @@ def draw_stars(canvas, visible_stars, frame_idx, rng):
 
     # Named bright stars — cross/diamond sparkle shapes
     for star in visible_stars:
-        # Twinkle effect
-        phase = frame_idx * 0.2 + hash(star["name"]) * 0.1
-        twinkle = 0.7 + 0.3 * math.sin(phase)
+        size = star["size"]
+        x, y = star["x"], star["y"]
+        name_hash = hash(star["name"])
+
+        # Twinkle effect — bigger stars get more dramatic variation
+        # Each star has its own phase offset and speed so they don't sync
+        speed = 0.35 + 0.15 * (name_hash % 7) / 6  # 0.35–0.50 per frame
+        phase = frame_idx * speed + name_hash * 0.1
+
+        # Layer multiple sine waves for organic, less predictable twinkling
+        wave1 = math.sin(phase)
+        wave2 = math.sin(phase * 1.7 + 2.0)  # faster secondary wave
+        wave3 = math.sin(phase * 0.4 + 5.0)  # slow drift
+
+        if size >= 3:
+            # Big named stars: dramatic twinkle (range 0.3–1.0)
+            twinkle = 0.55 + 0.25 * wave1 + 0.12 * wave2 + 0.08 * wave3
+            # Occasional bright flash for the biggest stars
+            flash = math.sin(phase * 0.6 + name_hash)
+            if flash > 0.92:
+                twinkle = min(1.0, twinkle + 0.3)
+        elif size >= 2:
+            # Medium stars: moderate twinkle (range 0.4–1.0)
+            twinkle = 0.65 + 0.20 * wave1 + 0.10 * wave2 + 0.05 * wave3
+        else:
+            # Small stars: subtle twinkle
+            twinkle = 0.7 + 0.20 * wave1 + 0.10 * wave2
+
+        twinkle = max(0.15, min(1.0, twinkle))
 
         color = (
             int(COLOR_STAR[0] * twinkle),
@@ -823,29 +850,37 @@ def draw_stars(canvas, visible_stars, frame_idx, rng):
             int(COLOR_STAR[2] * twinkle),
         )
 
-        size = star["size"]
-        x, y = star["x"], star["y"]
-
         # Center pixel always bright
         canvas.set_pixel(x, y, color)
 
         if size >= 3:
-            # Large star: 4-pointed cross sparkle
-            arm_len = size + 1
+            # Large star: 4-pointed cross sparkle with pulsing arm length
+            base_arm = size + 1
+            arm_len = max(2, int(base_arm * (0.6 + 0.4 * twinkle)))
             for d in range(1, arm_len + 1):
                 alpha = (1.0 - d / (arm_len + 1)) * twinkle
                 canvas.blend_pixel(x + d, y, color, alpha)
                 canvas.blend_pixel(x - d, y, color, alpha)
                 canvas.blend_pixel(x, y + d, color, alpha)
                 canvas.blend_pixel(x, y - d, color, alpha)
-            # Small diagonal accents
-            canvas.blend_pixel(x + 1, y + 1, color, 0.25 * twinkle)
-            canvas.blend_pixel(x - 1, y - 1, color, 0.25 * twinkle)
-            canvas.blend_pixel(x + 1, y - 1, color, 0.25 * twinkle)
-            canvas.blend_pixel(x - 1, y + 1, color, 0.25 * twinkle)
+            # Diagonal accents that pulse with twinkle
+            diag_alpha = 0.35 * twinkle
+            canvas.blend_pixel(x + 1, y + 1, color, diag_alpha)
+            canvas.blend_pixel(x - 1, y - 1, color, diag_alpha)
+            canvas.blend_pixel(x + 1, y - 1, color, diag_alpha)
+            canvas.blend_pixel(x - 1, y + 1, color, diag_alpha)
+            # Extra glow halo for brightest moments
+            if twinkle > 0.85:
+                glow_alpha = (twinkle - 0.85) * 2.0  # 0.0–0.30
+                for dx in range(-1, 2):
+                    for dy in range(-1, 2):
+                        if dx == 0 and dy == 0:
+                            continue
+                        canvas.blend_pixel(x + dx, y + dy, color, glow_alpha)
         elif size >= 2:
-            # Medium star: small cross
-            for d in range(1, 3):
+            # Medium star: small cross with pulsing
+            arm_reach = 2 if twinkle > 0.6 else 1
+            for d in range(1, arm_reach + 1):
                 alpha = (1.0 - d / 3) * twinkle
                 canvas.blend_pixel(x + d, y, color, alpha)
                 canvas.blend_pixel(x - d, y, color, alpha)
