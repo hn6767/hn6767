@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install Pillow numpy ephem requests scipy
+        run: pip install -r requirements.txt
 
       - name: Generate sky
         env:
