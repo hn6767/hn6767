@@ -1,2 +1,5 @@
-# Skyforge has no external dependencies — uses only Python stdlib.
-# This file exists for documentation purposes.
+Pillow
+numpy
+ephem
+requests
+scipy
