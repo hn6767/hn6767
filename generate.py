@@ -2,7 +2,7 @@
 """
 Skyforge — Pixel-art night sky generator for GitHub profile READMEs.
 
-Calculates real star positions for San Jose (~37.3°N, 121.9°W),
+Calculates real star positions for San Francisco (~37.8°N, 122.4°W),
 renders the current moon phase, pulls live weather data from Open-Meteo,
 and composites everything into an animated pixel-art GIF with twinkling
 stars, a cityscape silhouette, animated building windows, shooting stars,
@@ -20,11 +20,11 @@ from datetime import datetime, timezone, timedelta
 
 # ─── Configuration ───────────────────────────────────────────────────────────
 
-# Location: San Jose, CA
-LATITUDE = 37.3382
-LONGITUDE = -121.8863
+# Location: San Francisco, CA
+LATITUDE = 37.7749
+LONGITUDE = -122.4194
 TIMEZONE_OFFSET = -7  # PDT (adjust to -8 for PST)
-CITY_NAME = "San Jose, CA"
+CITY_NAME = "San Francisco, CA"
 
 # Image dimensions
 WIDTH = 640
@@ -58,6 +58,9 @@ COLOR_HUD_TEXT = (200, 200, 220)
 COLOR_SHOOTING_STAR = (255, 255, 200)
 COLOR_ANTENNA_RED = (255, 40, 40)
 COLOR_ANTENNA_OFF = (60, 20, 20)
+COLOR_GG_BRIDGE = (180, 60, 30)       # International Orange
+COLOR_GG_BRIDGE_DARK = (120, 40, 20)  # Darker tower shading
+COLOR_GG_CABLE = (140, 50, 25)        # Cable color
 
 # ─── Tiny Font (3x5 pixel font for HUD) ────────────────────────────────────
 
@@ -172,42 +175,35 @@ CONSTELLATION_LINES = [
 #   roof_type: "flat", "pointed", "spire", "stepped", "dome"
 
 BUILDINGS = [
-    # Background layer (shorter, lighter)
-    (0, 35, 40, 0, "flat"),     (30, 25, 50, 0, "stepped"),
-    (55, 40, 35, 0, "flat"),    (90, 20, 55, 0, "pointed"),
-    (108, 45, 42, 0, "flat"),   (150, 22, 48, 0, "flat"),
-    (170, 30, 38, 0, "dome"),   (200, 50, 45, 0, "flat"),
-    (248, 25, 52, 0, "pointed"),(270, 40, 36, 0, "flat"),
-    (310, 28, 46, 0, "stepped"),(338, 35, 40, 0, "flat"),
-    (370, 22, 55, 0, "pointed"),(390, 45, 38, 0, "flat"),
-    (432, 30, 50, 0, "dome"),   (460, 25, 42, 0, "flat"),
-    (485, 40, 36, 0, "flat"),   (522, 20, 55, 0, "pointed"),
-    (540, 35, 44, 0, "stepped"),(575, 45, 38, 0, "flat"),
+    # Background layer (shorter, lighter) — starts at x=140 to leave room for bridge
+    (140, 35, 40, 0, "flat"),   (170, 25, 50, 0, "stepped"),
+    (195, 40, 35, 0, "flat"),   (230, 20, 55, 0, "pointed"),
+    (248, 45, 42, 0, "flat"),   (290, 22, 48, 0, "flat"),
+    (310, 30, 38, 0, "dome"),   (340, 50, 45, 0, "flat"),
+    (388, 25, 52, 0, "pointed"),(410, 40, 36, 0, "flat"),
+    (448, 28, 46, 0, "stepped"),(476, 35, 40, 0, "flat"),
+    (508, 22, 55, 0, "pointed"),(528, 45, 38, 0, "flat"),
+    (570, 30, 50, 0, "dome"),   (598, 25, 42, 0, "flat"),
     (618, 25, 50, 0, "pointed"),
 
     # Midground layer
-    (5, 28, 60, 1, "pointed"),  (32, 35, 70, 1, "spire"),
-    (65, 22, 52, 1, "flat"),    (85, 40, 78, 1, "stepped"),
-    (122, 18, 55, 1, "flat"),   (138, 32, 85, 1, "spire"),
-    (168, 25, 62, 1, "pointed"),(190, 38, 72, 1, "flat"),
-    (226, 20, 58, 1, "flat"),   (244, 42, 80, 1, "pointed"),
-    (284, 25, 55, 1, "flat"),   (308, 30, 90, 1, "spire"),
-    (336, 22, 60, 1, "flat"),   (356, 36, 75, 1, "stepped"),
-    (390, 28, 65, 1, "pointed"),(416, 40, 82, 1, "spire"),
-    (454, 22, 55, 1, "flat"),   (474, 35, 70, 1, "pointed"),
-    (508, 30, 78, 1, "stepped"),(536, 24, 58, 1, "flat"),
-    (558, 38, 85, 1, "spire"),  (594, 22, 62, 1, "pointed"),
-    (614, 30, 72, 1, "flat"),
+    (145, 28, 60, 1, "pointed"),(172, 35, 70, 1, "spire"),
+    (205, 22, 52, 1, "flat"),   (225, 40, 78, 1, "stepped"),
+    (262, 18, 55, 1, "flat"),   (278, 32, 85, 1, "spire"),
+    (308, 25, 62, 1, "pointed"),(330, 38, 72, 1, "flat"),
+    (366, 20, 58, 1, "flat"),   (384, 42, 80, 1, "pointed"),
+    (424, 25, 55, 1, "flat"),   (448, 30, 90, 1, "spire"),
+    (476, 22, 60, 1, "flat"),   (496, 36, 75, 1, "stepped"),
+    (530, 28, 65, 1, "pointed"),(556, 40, 82, 1, "spire"),
+    (594, 22, 55, 1, "flat"),   (614, 30, 72, 1, "flat"),
 
     # Foreground layer (tallest, darkest)
-    (10, 32, 75, 2, "flat"),    (48, 44, 95, 2, "spire"),
-    (98, 26, 65, 2, "pointed"), (130, 50, 105, 2, "stepped"),
-    (185, 30, 70, 2, "flat"),   (220, 48, 100, 2, "spire"),
-    (275, 28, 68, 2, "pointed"),(310, 42, 92, 2, "flat"),
-    (360, 32, 80, 2, "spire"),  (400, 50, 108, 2, "stepped"),
-    (458, 26, 72, 2, "flat"),   (490, 44, 98, 2, "spire"),
-    (540, 30, 65, 2, "pointed"),(578, 48, 88, 2, "flat"),
-    (630, 28, 75, 2, "spire"),
+    (150, 32, 75, 2, "flat"),   (188, 44, 95, 2, "spire"),
+    (238, 26, 65, 2, "pointed"),(270, 50, 105, 2, "stepped"),
+    (325, 30, 70, 2, "flat"),   (360, 48, 100, 2, "spire"),
+    (415, 28, 68, 2, "pointed"),(450, 42, 92, 2, "flat"),
+    (500, 32, 80, 2, "spire"),  (540, 50, 108, 2, "stepped"),
+    (598, 26, 72, 2, "flat"),   (630, 28, 75, 2, "spire"),
 ]
 
 # Building layer base colors (background → foreground)
@@ -233,7 +229,7 @@ BUILDING_TINTS = [
 ]
 
 # Antenna positions (building index, from foreground layer)
-ANTENNA_BUILDINGS = [1, 3, 5, 8, 11, 14]
+ANTENNA_BUILDINGS = [1, 3, 5, 8, 11]
 
 
 # ─── Astronomical calculations ──────────────────────────────────────────────
@@ -1042,6 +1038,102 @@ def _tinted_color(base, tint_idx):
     )
 
 
+def draw_golden_gate_bridge(canvas, frame_idx):
+    """Draw a pixel-art Golden Gate Bridge silhouette on the left side."""
+    base_y = HEIGHT - 65  # Same base as cityscape
+
+    # Bridge geometry
+    tower1_x = 30        # Left tower center
+    tower2_x = 110       # Right tower center
+    tower_w = 8          # Tower width
+    tower_h = 95         # Tower height (taller than most buildings)
+    deck_y = base_y - 20 # Road deck height
+    deck_h = 4           # Deck thickness
+    tower_top_y = base_y - tower_h
+
+    # --- Towers ---
+    for tx in (tower1_x, tower2_x):
+        # Main tower body (two columns with gap)
+        col_w = 3
+        gap = 2
+        left_col = tx - col_w - gap // 2
+        right_col = tx + gap // 2
+
+        for col_x in (left_col, right_col):
+            canvas.fill_rect(col_x, tower_top_y, col_w, tower_h, COLOR_GG_BRIDGE)
+            # Highlight on left edge
+            for y in range(tower_top_y, base_y):
+                canvas.set_pixel(col_x, y, COLOR_GG_BRIDGE_DARK)
+
+        # Cross-braces between columns (every ~15 px)
+        for brace_y in range(tower_top_y + 8, deck_y, 15):
+            for bx in range(left_col + col_w, right_col):
+                canvas.set_pixel(bx, brace_y, COLOR_GG_BRIDGE)
+                canvas.set_pixel(bx, brace_y + 1, COLOR_GG_BRIDGE_DARK)
+
+        # Tower cap
+        cap_w = tower_w + 4
+        cap_x = tx - cap_w // 2
+        canvas.fill_rect(cap_x, tower_top_y - 2, cap_w, 3, COLOR_GG_BRIDGE)
+        canvas.fill_rect(cap_x + 1, tower_top_y - 3, cap_w - 2, 1, COLOR_GG_BRIDGE_DARK)
+
+    # --- Road deck ---
+    deck_x_start = 0
+    deck_x_end = 140
+    canvas.fill_rect(deck_x_start, deck_y, deck_x_end - deck_x_start, deck_h,
+                     COLOR_GG_BRIDGE_DARK)
+    # Top edge of deck (lighter)
+    for x in range(deck_x_start, deck_x_end):
+        canvas.set_pixel(x, deck_y, COLOR_GG_BRIDGE)
+
+    # Vertical suspender cables from deck up to main cable
+    for x in range(tower1_x - 10, tower2_x + 15, 6):
+        if abs(x - tower1_x) < 5 or abs(x - tower2_x) < 5:
+            continue  # Skip inside towers
+        # Main cable y at this x (catenary between towers)
+        cable_y = _catenary_y(x, tower1_x, tower2_x, tower_top_y, deck_y - 6)
+        for y in range(int(cable_y), deck_y):
+            canvas.blend_pixel(x, y, COLOR_GG_CABLE, 0.4)
+
+    # --- Main suspension cables (catenary curves) ---
+    # Cable from left edge to tower1 to tower2 to right edge
+    segments = [
+        (0, tower1_x, tower_top_y + 3, deck_y - 8),      # left approach
+        (tower1_x, tower2_x, tower_top_y, deck_y - 6),    # main span
+        (tower2_x, 140, tower_top_y + 3, deck_y - 8),     # right approach
+    ]
+    for seg_x0, seg_x1, seg_top, seg_sag in segments:
+        for x in range(seg_x0, seg_x1):
+            cy = _catenary_y(x, seg_x0, seg_x1, seg_top, seg_sag)
+            canvas.set_pixel(x, int(cy), COLOR_GG_CABLE)
+            canvas.blend_pixel(x, int(cy) + 1, COLOR_GG_CABLE, 0.4)
+
+    # --- Blinking aviation lights on tower tops ---
+    blink = (frame_idx * 2) % 24
+    light_color = COLOR_ANTENNA_RED if blink < 12 else COLOR_ANTENNA_OFF
+    for tx in (tower1_x, tower2_x):
+        canvas.set_pixel(tx, tower_top_y - 3, light_color)
+        if blink < 12:
+            canvas.blend_pixel(tx - 1, tower_top_y - 3, COLOR_ANTENNA_RED, 0.3)
+            canvas.blend_pixel(tx + 1, tower_top_y - 3, COLOR_ANTENNA_RED, 0.3)
+
+    # Fill below deck with dark ground/water color
+    water_color = (10, 12, 30)
+    for y in range(deck_y + deck_h, base_y):
+        for x in range(deck_x_start, deck_x_end):
+            canvas.set_pixel(x, y, water_color)
+
+
+def _catenary_y(x, x0, x1, top_y, sag_y):
+    """Compute y position along a parabolic cable between two towers."""
+    if x1 == x0:
+        return top_y
+    t = (x - x0) / (x1 - x0)  # 0 at x0, 1 at x1
+    # Parabola: lowest at midpoint (t=0.5), highest at towers (t=0, t=1)
+    sag = 4.0 * (sag_y - top_y) * t * (1 - t)
+    return top_y + sag
+
+
 def draw_cityscape(canvas, frame_idx, rng):
     """Draw the cityscape silhouette with animated windows and varied rooftops."""
     base_y = HEIGHT - 65  # Bottom area reserved for HUD
@@ -1388,6 +1480,9 @@ def generate_frame(frame_idx, visible_stars, weather, dt, phase_val, illuminatio
 
     # Cityscape
     draw_cityscape(canvas, frame_idx, rng)
+
+    # Golden Gate Bridge (drawn after cityscape so it overlays on the left)
+    draw_golden_gate_bridge(canvas, frame_idx)
 
     # HUD
     draw_hud(canvas, weather, visible_stars, dt, phase_val, illumination)
