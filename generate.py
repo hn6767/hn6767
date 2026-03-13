@@ -35,25 +35,25 @@ FRAME_DELAY_MS = 120  # ~8 fps
 # Pixel art scale factor (each "pixel" is this many real pixels)
 PIXEL_SCALE = 2
 
-# Color palette (retro/neon)
-COLOR_SKY_TOP = (10, 10, 40)       # Deep navy
-COLOR_SKY_MID1 = (25, 20, 70)      # Dark indigo
-COLOR_SKY_MID2 = (60, 40, 110)     # Purple
-COLOR_SKY_MID3 = (100, 50, 130)    # Lavender-purple
-COLOR_HORIZON_GLOW = (160, 60, 120) # Pink-magenta glow
+# Color palette — inspired by night SF skyline pixel art
+COLOR_SKY_TOP = (5, 5, 20)            # Near-black at zenith
+COLOR_SKY_MID1 = (10, 10, 40)         # Deep navy
+COLOR_SKY_MID2 = (20, 18, 55)         # Dark indigo
+COLOR_SKY_MID3 = (35, 25, 75)         # Subtle purple
+COLOR_HORIZON_GLOW = (50, 30, 80)     # Faint purple-blue horizon
 COLOR_STAR = (255, 255, 240)
 COLOR_STAR_DIM = (180, 180, 200)
 COLOR_MOON = (255, 250, 220)
-COLOR_MOON_SHADOW = (40, 35, 60)
+COLOR_MOON_SHADOW = (20, 18, 40)
 COLOR_BUILDING = (12, 10, 28)
-COLOR_WINDOW_ON = (255, 220, 100)
+COLOR_WINDOW_ON = (255, 210, 80)      # Warm golden
 COLOR_WINDOW_OFF = (20, 18, 40)
 COLOR_NEON_PINK = (255, 50, 150)
 COLOR_NEON_CYAN = (0, 255, 220)
 COLOR_NEON_PURPLE = (180, 80, 255)
-COLOR_CLOUD = (60, 55, 80)
-COLOR_CLOUD_EDGE = (80, 75, 110)
-COLOR_HUD_BG = (16, 14, 36)
+COLOR_CLOUD = (30, 28, 50)
+COLOR_CLOUD_EDGE = (50, 45, 70)
+COLOR_HUD_BG = (8, 8, 22)
 COLOR_HUD_TEXT = (200, 200, 220)
 COLOR_SHOOTING_STAR = (255, 255, 200)
 COLOR_ANTENNA_RED = (255, 40, 40)
@@ -61,6 +61,11 @@ COLOR_ANTENNA_OFF = (60, 20, 20)
 COLOR_GG_BRIDGE = (180, 60, 30)       # International Orange
 COLOR_GG_BRIDGE_DARK = (120, 40, 20)  # Darker tower shading
 COLOR_GG_CABLE = (140, 50, 25)        # Cable color
+COLOR_WATER = (8, 12, 35)             # Dark bay water
+COLOR_WATER_HIGHLIGHT = (15, 20, 50)  # Water ripple highlight
+COLOR_HILLS = (18, 18, 45)            # Dark distant hills
+COLOR_HILLS_LIGHT = (25, 25, 55)      # Lighter hill edge
+COLOR_CITY_GLOW = (80, 50, 20)        # Warm ambient city glow
 
 # ─── Tiny Font (3x5 pixel font for HUD) ────────────────────────────────────
 
@@ -175,35 +180,31 @@ CONSTELLATION_LINES = [
 #   roof_type: "flat", "pointed", "spire", "stepped", "dome"
 
 BUILDINGS = [
-    # Background layer (shorter, lighter) — starts at x=140 to leave room for bridge
-    (140, 35, 40, 0, "flat"),   (170, 25, 50, 0, "stepped"),
-    (195, 40, 35, 0, "flat"),   (230, 20, 55, 0, "pointed"),
-    (248, 45, 42, 0, "flat"),   (290, 22, 48, 0, "flat"),
-    (310, 30, 38, 0, "dome"),   (340, 50, 45, 0, "flat"),
-    (388, 25, 52, 0, "pointed"),(410, 40, 36, 0, "flat"),
-    (448, 28, 46, 0, "stepped"),(476, 35, 40, 0, "flat"),
-    (508, 22, 55, 0, "pointed"),(528, 45, 38, 0, "flat"),
-    (570, 30, 50, 0, "dome"),   (598, 25, 42, 0, "flat"),
-    (618, 25, 50, 0, "pointed"),
+    # Background layer — city skyline on the left half
+    (0, 30, 38, 0, "flat"),     (28, 22, 48, 0, "stepped"),
+    (48, 35, 34, 0, "flat"),    (80, 18, 52, 0, "pointed"),
+    (96, 40, 40, 0, "flat"),    (133, 20, 46, 0, "flat"),
+    (150, 28, 36, 0, "dome"),   (176, 45, 42, 0, "flat"),
+    (218, 22, 50, 0, "pointed"),(238, 35, 34, 0, "flat"),
+    (270, 25, 44, 0, "stepped"),(293, 30, 38, 0, "flat"),
+    (320, 20, 52, 0, "pointed"),(338, 40, 36, 0, "flat"),
 
-    # Midground layer
-    (145, 28, 60, 1, "pointed"),(172, 35, 70, 1, "spire"),
-    (205, 22, 52, 1, "flat"),   (225, 40, 78, 1, "stepped"),
-    (262, 18, 55, 1, "flat"),   (278, 32, 85, 1, "spire"),
-    (308, 25, 62, 1, "pointed"),(330, 38, 72, 1, "flat"),
-    (366, 20, 58, 1, "flat"),   (384, 42, 80, 1, "pointed"),
-    (424, 25, 55, 1, "flat"),   (448, 30, 90, 1, "spire"),
-    (476, 22, 60, 1, "flat"),   (496, 36, 75, 1, "stepped"),
-    (530, 28, 65, 1, "pointed"),(556, 40, 82, 1, "spire"),
-    (594, 22, 55, 1, "flat"),   (614, 30, 72, 1, "flat"),
+    # Midground layer — denser city on the left
+    (5, 25, 58, 1, "pointed"),  (28, 32, 68, 1, "spire"),
+    (58, 20, 50, 1, "flat"),    (76, 36, 76, 1, "stepped"),
+    (110, 16, 53, 1, "flat"),   (124, 28, 82, 1, "spire"),
+    (150, 22, 60, 1, "pointed"),(170, 34, 70, 1, "flat"),
+    (202, 18, 56, 1, "flat"),   (218, 38, 78, 1, "pointed"),
+    (254, 22, 53, 1, "flat"),   (274, 28, 88, 1, "spire"),
+    (300, 20, 58, 1, "flat"),   (318, 32, 73, 1, "stepped"),
+    (348, 25, 62, 1, "pointed"),
 
-    # Foreground layer (tallest, darkest)
-    (150, 32, 75, 2, "flat"),   (188, 44, 95, 2, "spire"),
-    (238, 26, 65, 2, "pointed"),(270, 50, 105, 2, "stepped"),
-    (325, 30, 70, 2, "flat"),   (360, 48, 100, 2, "spire"),
-    (415, 28, 68, 2, "pointed"),(450, 42, 92, 2, "flat"),
-    (500, 32, 80, 2, "spire"),  (540, 50, 108, 2, "stepped"),
-    (598, 26, 72, 2, "flat"),   (630, 28, 75, 2, "spire"),
+    # Foreground layer — tallest buildings left of center
+    (10, 28, 72, 2, "flat"),    (42, 40, 92, 2, "spire"),
+    (88, 24, 63, 2, "pointed"), (116, 45, 102, 2, "stepped"),
+    (166, 28, 68, 2, "flat"),   (198, 42, 96, 2, "spire"),
+    (246, 24, 66, 2, "pointed"),(276, 38, 88, 2, "flat"),
+    (320, 28, 78, 2, "spire"),  (354, 22, 60, 2, "flat"),
 ]
 
 # Building layer base colors (background → foreground)
@@ -229,7 +230,7 @@ BUILDING_TINTS = [
 ]
 
 # Antenna positions (building index, from foreground layer)
-ANTENNA_BUILDINGS = [1, 3, 5, 8, 11]
+ANTENNA_BUILDINGS = [1, 3, 5, 8]
 
 
 # ─── Astronomical calculations ──────────────────────────────────────────────
@@ -1038,100 +1039,254 @@ def _tinted_color(base, tint_idx):
     )
 
 
-def draw_golden_gate_bridge(canvas, frame_idx):
-    """Draw a pixel-art Golden Gate Bridge silhouette on the left side."""
-    base_y = HEIGHT - 65  # Same base as cityscape
+def _catenary_y(x, x0, x1, top_y, sag_y):
+    """Compute y position along a parabolic cable between two towers."""
+    if x1 == x0:
+        return top_y
+    t = (x - x0) / (x1 - x0)
+    sag = 4.0 * (sag_y - top_y) * t * (1 - t)
+    return top_y + sag
 
-    # Bridge geometry
-    tower1_x = 30        # Left tower center
-    tower2_x = 110       # Right tower center
-    tower_w = 8          # Tower width
-    tower_h = 95         # Tower height (taller than most buildings)
-    deck_y = base_y - 20 # Road deck height
-    deck_h = 4           # Deck thickness
+
+def draw_hills(canvas):
+    """Draw dark rolling hills behind the city skyline."""
+    base_y = HEIGHT - 65
+    hill_y = base_y - 30  # Hills peek above the shortest buildings
+
+    # Multiple hill layers with slightly different colors
+    hill_layers = [
+        # (height_base, amplitude, freq, phase, color)
+        (hill_y - 15, 12, 0.008, 0.0, COLOR_HILLS),
+        (hill_y - 5, 10, 0.012, 2.0, COLOR_HILLS_LIGHT),
+        (hill_y + 5, 8, 0.015, 4.5, COLOR_HILLS),
+    ]
+
+    for h_base, amp, freq, phase, color in hill_layers:
+        for x in range(WIDTH):
+            # Rolling hills using sine waves
+            hy = int(h_base + amp * math.sin(x * freq + phase)
+                     + amp * 0.5 * math.sin(x * freq * 2.3 + phase + 1.0))
+            for y in range(hy, base_y):
+                canvas.set_pixel(x, y, color)
+
+
+def draw_transamerica_pyramid(canvas):
+    """Draw the Transamerica Pyramid — SF's most recognizable building."""
+    base_y = HEIGHT - 65
+    # Position it prominently in the skyline
+    cx = 130
+    pyramid_h = 130       # Tallest structure — taller than any building
+    base_w = 26
+    top_y = base_y - pyramid_h
+
+    color = (12, 14, 38)         # Dark silhouette
+    color_light = (20, 22, 50)   # Slightly lighter left edge
+    window_color = (220, 185, 60)
+
+    for dy in range(pyramid_h):
+        t = dy / pyramid_h  # 0 at top, 1 at bottom
+        half_w = max(0, int(t * base_w / 2))
+        for dx in range(-half_w, half_w + 1):
+            px = cx + dx
+            c = color_light if dx == -half_w else color
+            canvas.set_pixel(px, top_y + dy, c)
+
+    # Windows on the pyramid (small dots of light)
+    for dy in range(20, pyramid_h - 5, 6):
+        t = dy / pyramid_h
+        half_w = max(1, int(t * base_w / 2) - 2)
+        for dx in range(-half_w, half_w, 5):
+            win_seed = hash((cx + dx, top_y + dy)) % 100
+            if win_seed < 50:
+                canvas.set_pixel(cx + dx, top_y + dy, window_color)
+                canvas.blend_pixel(cx + dx, top_y + dy + 1, window_color, 0.5)
+
+
+def draw_water(canvas, frame_idx):
+    """Draw the bay water with animated reflections."""
+    base_y = HEIGHT - 82  # Water starts above city base (waterfront)
+    water_bottom = HEIGHT - 60  # Just above HUD
+
+    # Base water
+    for y in range(base_y, water_bottom):
+        for x in range(WIDTH):
+            # Slight color variation for depth
+            t = (y - base_y) / max(1, water_bottom - base_y)
+            r = int(COLOR_WATER[0] * (1 - t * 0.3))
+            g = int(COLOR_WATER[1] * (1 - t * 0.3))
+            b = int(COLOR_WATER[2] * (1 - t * 0.3))
+            canvas.set_pixel(x, y, (r, g, b))
+
+    # Animated ripple highlights
+    rng = random.Random(frame_idx * 7 + 99)
+    for _ in range(60):
+        rx = rng.randint(0, WIDTH - 1)
+        ry = rng.randint(base_y + 1, water_bottom - 1)
+        ripple_len = rng.randint(3, 10)
+        alpha = rng.uniform(0.08, 0.2)
+        for dx in range(ripple_len):
+            if rx + dx < WIDTH:
+                canvas.blend_pixel(rx + dx, ry, COLOR_WATER_HIGHLIGHT, alpha)
+
+
+def draw_water_reflections(canvas, frame_idx):
+    """Draw city light and bridge light reflections in the water."""
+    base_y = HEIGHT - 82
+    water_bottom = HEIGHT - 60
+
+    # Reflect bright city windows downward into water
+    # Sample from the cityscape rows above water
+    city_base = HEIGHT - 65  # Where buildings end
+    for y in range(base_y, water_bottom):
+        depth = y - base_y
+        wave = math.sin(frame_idx * 0.3 + y * 0.5)
+        # Mirror: sample from above, mirrored distance
+        src_y = city_base - 1 - min(depth * 2, 20)
+        src_y = max(0, src_y)
+        for x in range(0, WIDTH, 2):
+            sx = x + int(wave * 2)
+            sx = max(0, min(WIDTH - 1, sx))
+            src_pixel = canvas.get_pixel(sx, src_y)
+            brightness = src_pixel[0] + src_pixel[1] + src_pixel[2]
+            if brightness > 150:
+                fade = max(0.03, 0.35 - depth * 0.015)
+                warm_color = (
+                    min(255, int(src_pixel[0] * 0.7)),
+                    min(255, int(src_pixel[1] * 0.5)),
+                    min(255, int(src_pixel[2] * 0.25)),
+                )
+                canvas.blend_pixel(x, y, warm_color, fade)
+                if x + 1 < WIDTH:
+                    canvas.blend_pixel(x + 1, y, warm_color, fade * 0.6)
+
+    # Bridge deck light reflections — vertical amber streaks in water
+    for lx in range(375, 640, 10):
+        wave_off = int(2 * math.sin(frame_idx * 0.4 + lx * 0.1))
+        for y in range(base_y, water_bottom):
+            depth = y - base_y
+            fade = max(0.03, 0.45 - depth * 0.02)
+            rx = lx + wave_off
+            if 0 <= rx < WIDTH:
+                canvas.blend_pixel(rx, y, (200, 140, 40), fade)
+                if rx + 1 < WIDTH:
+                    canvas.blend_pixel(rx + 1, y, (200, 140, 40), fade * 0.3)
+
+
+def draw_city_glow(canvas):
+    """Draw warm ambient glow above the city skyline."""
+    base_y = HEIGHT - 65
+    glow_height = 40  # How far up the glow extends
+
+    for y in range(base_y - glow_height, base_y):
+        t = (y - (base_y - glow_height)) / glow_height  # 0 at top, 1 at base
+        alpha = t * t * 0.12  # Stronger near buildings
+        for x in range(0, 380):  # Only over city area
+            # Taper at edges
+            x_fade = 1.0
+            if x > 340:
+                x_fade = (380 - x) / 40.0
+            canvas.blend_pixel(x, y, COLOR_CITY_GLOW, alpha * x_fade)
+
+
+def draw_golden_gate_bridge(canvas, frame_idx):
+    """Draw a prominent Golden Gate Bridge on the right side of the scene."""
+    base_y = HEIGHT - 65
+
+    # Bridge geometry — right side of frame, spanning rightward
+    tower1_x = 400       # Left tower center
+    tower2_x = 545       # Right tower center
+    tower_w = 10         # Tower width
+    tower_h = 105        # Tall towers
+    deck_y = base_y - 22 # Road deck height
+    deck_h = 5           # Deck thickness
     tower_top_y = base_y - tower_h
+    bridge_start = 370   # Left end of bridge deck
+    bridge_end = WIDTH    # Right end extends to edge
 
     # --- Towers ---
     for tx in (tower1_x, tower2_x):
-        # Main tower body (two columns with gap)
         col_w = 3
-        gap = 2
+        gap = 4
         left_col = tx - col_w - gap // 2
         right_col = tx + gap // 2
 
         for col_x in (left_col, right_col):
             canvas.fill_rect(col_x, tower_top_y, col_w, tower_h, COLOR_GG_BRIDGE)
-            # Highlight on left edge
+            # Shadow on right column edge
             for y in range(tower_top_y, base_y):
-                canvas.set_pixel(col_x, y, COLOR_GG_BRIDGE_DARK)
+                canvas.set_pixel(col_x + col_w - 1, y, COLOR_GG_BRIDGE_DARK)
 
-        # Cross-braces between columns (every ~15 px)
-        for brace_y in range(tower_top_y + 8, deck_y, 15):
+        # Cross-braces between columns
+        for brace_y in range(tower_top_y + 10, deck_y, 12):
             for bx in range(left_col + col_w, right_col):
                 canvas.set_pixel(bx, brace_y, COLOR_GG_BRIDGE)
                 canvas.set_pixel(bx, brace_y + 1, COLOR_GG_BRIDGE_DARK)
 
-        # Tower cap
-        cap_w = tower_w + 4
+        # Tower cap with stepped top
+        cap_w = tower_w + 6
         cap_x = tx - cap_w // 2
         canvas.fill_rect(cap_x, tower_top_y - 2, cap_w, 3, COLOR_GG_BRIDGE)
-        canvas.fill_rect(cap_x + 1, tower_top_y - 3, cap_w - 2, 1, COLOR_GG_BRIDGE_DARK)
+        canvas.fill_rect(cap_x + 2, tower_top_y - 4, cap_w - 4, 2, COLOR_GG_BRIDGE)
 
     # --- Road deck ---
-    deck_x_start = 0
-    deck_x_end = 140
-    canvas.fill_rect(deck_x_start, deck_y, deck_x_end - deck_x_start, deck_h,
+    canvas.fill_rect(bridge_start, deck_y, bridge_end - bridge_start, deck_h,
                      COLOR_GG_BRIDGE_DARK)
-    # Top edge of deck (lighter)
-    for x in range(deck_x_start, deck_x_end):
+    # Top edge highlight
+    for x in range(bridge_start, bridge_end):
         canvas.set_pixel(x, deck_y, COLOR_GG_BRIDGE)
 
-    # Vertical suspender cables from deck up to main cable
-    for x in range(tower1_x - 10, tower2_x + 15, 6):
-        if abs(x - tower1_x) < 5 or abs(x - tower2_x) < 5:
-            continue  # Skip inside towers
-        # Main cable y at this x (catenary between towers)
-        cable_y = _catenary_y(x, tower1_x, tower2_x, tower_top_y, deck_y - 6)
+    # --- Deck lights (warm amber dots along the deck) ---
+    light_color = (255, 200, 60)
+    light_glow = (200, 150, 40)
+    for lx in range(bridge_start + 5, bridge_end - 2, 10):
+        canvas.set_pixel(lx, deck_y - 1, light_color)
+        canvas.blend_pixel(lx - 1, deck_y - 1, light_glow, 0.4)
+        canvas.blend_pixel(lx + 1, deck_y - 1, light_glow, 0.4)
+        canvas.blend_pixel(lx, deck_y - 2, light_glow, 0.2)
+
+    # --- Vertical suspender cables ---
+    for x in range(bridge_start + 5, bridge_end - 5, 7):
+        if abs(x - tower1_x) < 6 or abs(x - tower2_x) < 6:
+            continue
+        # Determine which span we're in for the cable
+        if x < tower1_x:
+            cable_y = _catenary_y(x, bridge_start, tower1_x,
+                                  tower_top_y + 5, deck_y - 8)
+        elif x < tower2_x:
+            cable_y = _catenary_y(x, tower1_x, tower2_x,
+                                  tower_top_y, deck_y - 8)
+        else:
+            cable_y = _catenary_y(x, tower2_x, bridge_end,
+                                  tower_top_y + 5, deck_y - 8)
         for y in range(int(cable_y), deck_y):
-            canvas.blend_pixel(x, y, COLOR_GG_CABLE, 0.4)
+            canvas.blend_pixel(x, y, COLOR_GG_CABLE, 0.35)
 
     # --- Main suspension cables (catenary curves) ---
-    # Cable from left edge to tower1 to tower2 to right edge
     segments = [
-        (0, tower1_x, tower_top_y + 3, deck_y - 8),      # left approach
-        (tower1_x, tower2_x, tower_top_y, deck_y - 6),    # main span
-        (tower2_x, 140, tower_top_y + 3, deck_y - 8),     # right approach
+        (bridge_start, tower1_x, tower_top_y + 5, deck_y - 8),
+        (tower1_x, tower2_x, tower_top_y, deck_y - 8),
+        (tower2_x, bridge_end, tower_top_y + 5, deck_y - 8),
     ]
     for seg_x0, seg_x1, seg_top, seg_sag in segments:
-        for x in range(seg_x0, seg_x1):
+        for x in range(seg_x0, min(seg_x1, WIDTH)):
             cy = _catenary_y(x, seg_x0, seg_x1, seg_top, seg_sag)
             canvas.set_pixel(x, int(cy), COLOR_GG_CABLE)
-            canvas.blend_pixel(x, int(cy) + 1, COLOR_GG_CABLE, 0.4)
+            canvas.blend_pixel(x, int(cy) + 1, COLOR_GG_CABLE, 0.3)
 
-    # --- Blinking aviation lights on tower tops ---
+    # --- Blinking aviation lights ---
     blink = (frame_idx * 2) % 24
-    light_color = COLOR_ANTENNA_RED if blink < 12 else COLOR_ANTENNA_OFF
+    light = COLOR_ANTENNA_RED if blink < 12 else COLOR_ANTENNA_OFF
     for tx in (tower1_x, tower2_x):
-        canvas.set_pixel(tx, tower_top_y - 3, light_color)
+        canvas.set_pixel(tx, tower_top_y - 4, light)
         if blink < 12:
-            canvas.blend_pixel(tx - 1, tower_top_y - 3, COLOR_ANTENNA_RED, 0.3)
-            canvas.blend_pixel(tx + 1, tower_top_y - 3, COLOR_ANTENNA_RED, 0.3)
+            canvas.blend_pixel(tx - 1, tower_top_y - 4, COLOR_ANTENNA_RED, 0.4)
+            canvas.blend_pixel(tx + 1, tower_top_y - 4, COLOR_ANTENNA_RED, 0.4)
+            canvas.blend_pixel(tx, tower_top_y - 5, COLOR_ANTENNA_RED, 0.3)
 
-    # Fill below deck with dark ground/water color
-    water_color = (10, 12, 30)
-    for y in range(deck_y + deck_h, base_y):
-        for x in range(deck_x_start, deck_x_end):
-            canvas.set_pixel(x, y, water_color)
-
-
-def _catenary_y(x, x0, x1, top_y, sag_y):
-    """Compute y position along a parabolic cable between two towers."""
-    if x1 == x0:
-        return top_y
-    t = (x - x0) / (x1 - x0)  # 0 at x0, 1 at x1
-    # Parabola: lowest at midpoint (t=0.5), highest at towers (t=0, t=1)
-    sag = 4.0 * (sag_y - top_y) * t * (1 - t)
-    return top_y + sag
+    # --- Fill below deck with water ---
+    for y in range(deck_y + deck_h, HEIGHT - 60):
+        for x in range(bridge_start, min(bridge_end, WIDTH)):
+            canvas.set_pixel(x, y, COLOR_WATER)
 
 
 def draw_cityscape(canvas, frame_idx, rng):
@@ -1221,7 +1376,7 @@ def draw_cityscape(canvas, frame_idx, rng):
         win_h = 3 if layer == 0 else 4
         win_gap_x = 5 if layer == 0 else 6
         win_gap_y = 6 if layer == 0 else 7
-        win_on_pct = 25 if layer == 0 else (40 if layer == 1 else 50)
+        win_on_pct = 35 if layer == 0 else (55 if layer == 1 else 65)
 
         for wy in range(top_y + 4, base_y - 4, win_gap_y):
             for wx in range(bx + 3, bx + bw - win_w - 1, win_gap_x):
@@ -1458,6 +1613,12 @@ def generate_frame(frame_idx, visible_stars, weather, dt, phase_val, illuminatio
     # Sky gradient
     draw_sky_gradient(canvas)
 
+    # Hills behind everything
+    draw_hills(canvas)
+
+    # City ambient glow (drawn before stars so it doesn't wash them out)
+    draw_city_glow(canvas)
+
     # Constellation lines (behind stars)
     draw_constellation_lines(canvas, visible_stars)
 
@@ -1478,11 +1639,20 @@ def generate_frame(frame_idx, visible_stars, weather, dt, phase_val, illuminatio
     # Shooting star
     draw_shooting_star(canvas, frame_idx)
 
-    # Cityscape
+    # Cityscape (left side)
     draw_cityscape(canvas, frame_idx, rng)
 
-    # Golden Gate Bridge (drawn after cityscape so it overlays on the left)
+    # Transamerica Pyramid
+    draw_transamerica_pyramid(canvas)
+
+    # Golden Gate Bridge (right side)
     draw_golden_gate_bridge(canvas, frame_idx)
+
+    # Bay water
+    draw_water(canvas, frame_idx)
+
+    # Water reflections of lights
+    draw_water_reflections(canvas, frame_idx)
 
     # HUD
     draw_hud(canvas, weather, visible_stars, dt, phase_val, illumination)
