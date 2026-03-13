@@ -1,0 +1,40 @@
+name: Skyforge
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # 6 AM UTC = ~11 PM PDT (night sky time)
+  workflow_dispatch:       # Manual trigger from Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install Pillow numpy ephem requests scipy
+
+      - name: Generate sky
+        env:
+          SKYFORGE_SKELETON: skeleton.png
+          SKYFORGE_LIGHTMAP: lightmap.png
+          SKYFORGE_OUTPUT: skyforge.gif
+          SKYFORGE_LAT: "37.3382"
+          SKYFORGE_LON: "-121.8863"
+          SKYFORGE_LOCATION: "Bay Area, CA"
+        run: python generate.py
+
+      - name: Commit
+        run: |
+          git config user.name "Skyforge"
+          git config user.email "skyforge@users.noreply.github.com"
+          git add skyforge.gif
+          git diff --staged --quiet || git commit -m "🌌 $(date -u +%Y-%m-%d)"
+          git push
