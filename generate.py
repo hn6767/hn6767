@@ -11,6 +11,7 @@ import math
 import os
 import sys
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 
@@ -318,7 +319,7 @@ def draw_hud(draw, w, h, wx, m_phase, vis, date_str):
     if names: draw.text((w//2-60, ty+12), names, fill=(60, 65, 88), font=fs)
 
     draw.text((w-155, ty), LOCATION, fill=NEON_GREEN, font=f)
-    draw.text((w-155, ty+12), date_str, fill=(80, 80, 100), font=fs)
+    draw.text((w-210, ty+12), date_str, fill=(80, 80, 100), font=fs)
     draw.text((w-66, by+22), "SKYFORGE", fill=(25, 25, 38), font=fs)
 
 
@@ -357,7 +358,8 @@ def generate():
     vis = visible_stars(LAT, LON, now)
     print(f"     → {len(vis)} visible")
 
-    date_str = (now + timedelta(hours=-7)).strftime("%Y-%m-%d")
+    local_now = now.astimezone(ZoneInfo("America/Los_Angeles"))
+    date_str = local_now.strftime("%Y-%m-%d %I:%M %p %Z")
     sky_h = int(OUTPUT_H * SKY_BOTTOM)
 
     print(f"  🎞️  Rendering {NUM_FRAMES} frames...")
