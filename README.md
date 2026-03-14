@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="skyforge.gif" alt="Skyforge — Tonight's sky over San Jose" width="640"/>
+  <img src="skyforge.gif" alt="Skyforge — Tonight's sky over SF" width="640"/>
 </p>
 
 <p align="center">
-  <em>Tonight's sky over San Jose, CA — updated daily by <a href=".github/workflows/skyforge.yml">Skyforge</a></em>
+  <em>Tonight's sky over SF, CA — updated daily by <a href=".github/workflows/skyforge.yml">Skyforge</a></em>
 </p>
 
 ---
 
 ### Hey, I'm Hursh Naik
 
-A pixel-art night sky generated fresh every night showing real star positions, moon phase, and live weather for San Jose.
+A pixel-art night sky generated fresh every night showing real star positions, moon phase, and live weather for SF.
 
 **How it works:** A Python script calculates actual stellar positions using astronomical math, fetches live weather from Open-Meteo, computes the moon phase, and renders it all as an animated pixel-art GIF. Runs on a daily GitHub Actions cron.
 

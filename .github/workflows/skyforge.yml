@@ -26,9 +26,9 @@ jobs:
           SKYFORGE_SKELETON: skeleton.png
           SKYFORGE_LIGHTMAP: lightmap.png
           SKYFORGE_OUTPUT: skyforge.gif
-          SKYFORGE_LAT: "37.3382"
-          SKYFORGE_LON: "-121.8863"
-          SKYFORGE_LOCATION: "Bay Area, CA"
+          SKYFORGE_LAT: "37.7749"
+          SKYFORGE_LON: "-122.4194"
+          SKYFORGE_LOCATION: "SF, CA"
         run: python generate.py
 
       - name: Commit
