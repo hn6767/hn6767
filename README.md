@@ -16,15 +16,9 @@ A pixel-art night sky generated fresh every night showing real star positions, m
 
 ---
 
-<!--
 ### Projects
 
 | Project | Description |
 |---------|-------------|
-| [project-name](https://github.com/hn6767/project-name) | Short description |
-
----
-
-### Contribution Snake
-![Snake animation](https://github.com/hn6767/hn6767/blob/output/github-contribution-grid-snake.svg)
--->
+| [CircuitHistology](https://github.com/hn6767/CircuitHistology) | Mechanistic interpretability research — dissects how LLMs perform factual reasoning using prompt ablation and attribution graph analysis on Gemma-2-2B |
+| [GodelEncoder](https://github.com/hn6767/GodelEncoder) | Neural theorem prover that encodes Metamath proofs into structured matrices, using spectral analysis and GPT-2 fine-tuning for proof generation |
