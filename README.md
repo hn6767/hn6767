@@ -8,7 +8,7 @@
 
 ---
 
-### Hey, I'm hn6767
+### Hey, I'm Hursh Naik
 
 A pixel-art night sky generated fresh every night showing real star positions, moon phase, and live weather for San Jose.
 
@@ -21,4 +21,4 @@ A pixel-art night sky generated fresh every night showing real star positions, m
 | Project | Description |
 |---------|-------------|
 | [CircuitHistology](https://github.com/hn6767/CircuitHistology) | Mechanistic interpretability research — dissects how LLMs perform factual reasoning using prompt ablation and attribution graph analysis on Gemma-2-2B |
-| [GodelEncoder](https://github.com/hn6767/GodelEncoder) | Neural theorem prover that encodes Metamath proofs into structured matrices, using spectral analysis and GPT-2 fine-tuning for proof generation |
+| [GodelEncoder](https://github.com/hn6767/GodelEncoder) | Neural theorem prover that encodes Metamath/Lean proofs into structured matrices, using spectral analysis and GPT-f style fine-tuning for proof generation |
