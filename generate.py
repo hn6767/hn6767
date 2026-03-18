@@ -31,9 +31,9 @@ OUTPUT_H = 360
 NUM_FRAMES = 30
 FRAME_DELAY_MS = 130
 
-LAT = float(os.environ.get("SKYFORGE_LAT", "37.3382"))
-LON = float(os.environ.get("SKYFORGE_LON", "-121.8863"))
-LOCATION = os.environ.get("SKYFORGE_LOCATION", "Bay Area, CA")
+LAT = float(os.environ.get("SKYFORGE_LAT", "37.7749"))
+LON = float(os.environ.get("SKYFORGE_LON", "-122.4194"))
+LOCATION = os.environ.get("SKYFORGE_LOCATION", "SF, CA")
 
 # Region boundaries (fractions of image height)
 SKY_BOTTOM = 0.35       # Sky ends here
