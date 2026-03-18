@@ -318,8 +318,8 @@ def draw_hud(draw, w, h, wx, m_phase, vis, date_str):
     names = " · ".join(n for n, _, _, _ in vis[:5])
     if names: draw.text((w//2-60, ty+12), names, fill=(60, 65, 88), font=fs)
 
-    draw.text((w-155, ty), LOCATION, fill=NEON_GREEN, font=f)
-    draw.text((w-210, ty+12), date_str, fill=(80, 80, 100), font=fs)
+    draw.text((w-130, ty), LOCATION, fill=NEON_GREEN, font=f)
+    draw.text((w-130, ty+12), date_str, fill=(80, 80, 100), font=fs)
     draw.text((w-66, by+22), "SKYFORGE", fill=(25, 25, 38), font=fs)
 
 
@@ -359,7 +359,7 @@ def generate():
     print(f"     → {len(vis)} visible")
 
     local_now = now.astimezone(ZoneInfo("America/Los_Angeles"))
-    date_str = local_now.strftime("%Y-%m-%d %I:%M %p %Z")
+    date_str = local_now.strftime("%Y-%m-%d")
     sky_h = int(OUTPUT_H * SKY_BOTTOM)
 
     print(f"  🎞️  Rendering {NUM_FRAMES} frames...")
