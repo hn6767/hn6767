@@ -212,10 +212,9 @@ def draw_stars(draw, px, vis, frame, sky_h):
                     if 0 <= nx < OUTPUT_W and 0 <= ny < sky_h:
                         px[nx, ny] = c
 
-        # Star name label
-        if mag < 1.0 and tw > 0.45:
-            lc = int(140 * tw)
-            draw.text((sx + size + 2, sy - 4), name, fill=(lc, lc, int(lc * 0.8)), font=fl)
+        # Star name label — show for all catalog stars, steady (not tied to twinkle)
+        if mag < 2.0:
+            draw.text((sx + size + 2, sy - 4), name, fill=(100, 100, 80), font=fl)
 
 
 def draw_shooting_star(px, frame, total):
