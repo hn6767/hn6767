@@ -51,6 +51,8 @@ PRESETS = {
     "panorama": (150.0, 180.0, 70.0),
 }
 VIEW_MODE = os.environ.get("SKYFORGE_VIEW", "panorama")
+if VIEW_MODE not in PRESETS:
+    raise SystemExit(f"SKYFORGE_VIEW must be one of {', '.join(PRESETS)}, not {VIEW_MODE!r}")
 _az, _w, _top = PRESETS[VIEW_MODE]
 VIEW_AZ_DEG = float(os.environ.get("SKYFORGE_VIEW_AZ", _az))       # centre of frame
 HFOV_DEG = float(os.environ.get("SKYFORGE_HFOV", _w))              # left edge to right edge
@@ -117,8 +119,10 @@ def observer(when_utc, temp_c=None):
     o = ephem.Observer()
     o.lat, o.lon = str(VIEW_LAT), str(VIEW_LON)
     o.elevation = VIEW_ELEV_M
-    o.date = ephem.Date(when_utc.replace(tzinfo=None))
-    if temp_c is not None:
+    if when_utc.tzinfo is not None:
+        when_utc = when_utc.astimezone(timezone.utc).replace(tzinfo=None)
+    o.date = ephem.Date(when_utc)
+    if isinstance(temp_c, (int, float)):
         o.temp = temp_c          # refraction uses air temperature
     return o
 
@@ -136,6 +140,8 @@ def _deg(rad):
 
 def compute_sky(when_utc, temp_c=None, stars=None):
     """All stars (to the catalogue limit), planets and the Moon, as Bodies."""
+    if when_utc.tzinfo is None:
+        when_utc = when_utc.replace(tzinfo=timezone.utc)
     o = observer(when_utc, temp_c)
     years = (when_utc - datetime(2000, 1, 1, 12, tzinfo=timezone.utc)).days / 365.25
 

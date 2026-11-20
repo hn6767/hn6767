@@ -101,7 +101,8 @@ def weather(lat, lon):
             timeout=10).json().get("current", {})
         wmo = d.get("weather_code", 0)
         c = "clear" if wmo <= 1 else "cloudy" if wmo <= 3 else "fog" if wmo <= 48 else "rain" if wmo <= 67 else "storm"
-        return {"temp_c": d.get("temperature_2m", 15), "cond": c,
+        temp = d.get("temperature_2m")
+        return {"temp_c": temp if isinstance(temp, (int, float)) else 15, "cond": c,
                 "hum": d.get("relative_humidity_2m", 50), "wind": d.get("wind_speed_10m", 10)}
     except: return {"temp_c": 15, "cond": "clear", "hum": 50, "wind": 10}
 
@@ -162,12 +163,21 @@ def _set(px, x, y, c, skyline):
         px[x, y] = c
 
 
-def draw_stars(draw, px, objs, frame, skyline):
+def moon_box(moon, radius=MOON_RADIUS):
+    """Screen box the Moon and its halo cover, so labels can keep clear."""
+    xy = sky.project(moon.az, moon.alt, OUTPUT_W, OUTPUT_H, margin=radius)
+    if moon.alt <= -1 or xy is None:
+        return None
+    r = radius + 5
+    return (int(xy[0]) - r, int(xy[1]) - r, int(xy[0]) + r, int(xy[1]) + r)
+
+
+def draw_stars(draw, px, objs, frame, skyline, keep_clear=()):
     """Stars and planets at their real positions. Pixel size and brightness
     follow magnitude after extinction; stars scintillate more near the
     horizon, planets shine steadily."""
     fl = font(8)
-    labels = []   # occupied label boxes, to avoid overlaps
+    labels = list(keep_clear)   # occupied boxes (labels, Moon), to avoid overlaps
 
     for b, sx, sy, mag in reversed(objs):          # faint first, bright on top
         if b.kind == "planet":
@@ -206,14 +216,22 @@ def draw_stars(draw, px, objs, frame, skyline):
         if not b.name or not (b.kind == "planet" or b.mag < LABEL_MAG):
             continue
         size = 4 if mag < 0 else 3 if mag < 1.0 else 2 if mag < 1.8 else 1
-        tx, ty = sx + size + 2, sy - 4
-        box = (tx, ty, tx + int(draw.textlength(b.name, font=fl)), ty + 9)
-        clear = all(box[3] < skyline[x] - 1 for x in range(max(0, tx), min(OUTPUT_W, box[2] + 1)))
-        if box[2] < OUTPUT_W and ty >= 0 and clear and not any(
-                box[0] < o[2] and o[0] < box[2] and box[1] < o[3] and o[1] < box[3] for o in labels):
-            fill = (125, 110, 85) if b.kind == "planet" else (100, 100, 80)
-            draw.text((tx, ty), b.name, fill=fill, font=fl)
-            labels.append(box)
+        tw_px = int(draw.textlength(b.name, font=fl))
+        # Right of the object if it fits, else left, else just below/above it.
+        spots = [(sx + size + 2, sy - 4), (sx - size - 2 - tw_px, sy - 4),
+                 (sx - tw_px // 2, sy + size + 1), (sx - tw_px // 2, sy - size - 10)]
+        for tx, ty in spots:
+            box = (tx, ty, tx + tw_px, ty + 9)
+            padded = (box[0] - 2, box[1] - 1, box[2] + 2, box[3] + 1)
+            inside = 0 <= box[0] and box[2] < OUTPUT_W and ty >= 0
+            clear = inside and all(box[3] < skyline[x] - 1 for x in range(box[0], box[2] + 1))
+            free = not any(padded[0] < o[2] and o[0] < padded[2] and padded[1] < o[3] and o[1] < padded[3]
+                           for o in labels)
+            if clear and free:
+                fill = (125, 110, 85) if b.kind == "planet" else (100, 100, 80)
+                draw.text((tx, ty), b.name, fill=fill, font=fl)
+                labels.append(box)
+                break
 
 
 def draw_shooting_star(px, frame, total):
@@ -368,6 +386,7 @@ def generate():
           f"az {moon.az:.1f}° alt {moon.alt:.1f}°")
 
     date_str = local.strftime("%Y-%m-%d %H:%M")
+    mbox = moon_box(moon)
 
     print(f"  🎞️  Rendering {NUM_FRAMES} frames...")
     frames = []
@@ -400,7 +419,7 @@ def generate():
             px[x, y] = (min(255, int(r*shimmer)), min(255, int(g*shimmer)), min(255, int(b*shimmer)))
 
         # ── Sky: real stars and planets (Python-generated, not from images) ──
-        draw_stars(draw, px, objs, fi, skyline)
+        draw_stars(draw, px, objs, fi, skyline, keep_clear=[mbox] if mbox else ())
 
         # ── Shooting star ──
         draw_shooting_star(px, fi, NUM_FRAMES)

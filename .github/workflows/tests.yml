@@ -1,0 +1,31 @@
+name: Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Unit tests (astronomy, framing, labels, a year of nights, full render)
+        run: python -m unittest discover -v tests
+
+      - name: Render a preview GIF (not committed)
+        env:
+          SKYFORGE_OUTPUT: preview.gif
+        run: python generate.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: skyforge-preview
+          path: preview.gif
