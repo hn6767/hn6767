@@ -29,6 +29,8 @@ jobs:
           SKYFORGE_LAT: "37.7749"
           SKYFORGE_LON: "-122.4194"
           SKYFORGE_LOCATION: "SF, CA"
+          SKYFORGE_LOCAL_TIME: "22:00"   # sky drawn for 10 PM Pacific that night
+          SKYFORGE_VIEW: panorama        # or "lens" for a strict 90° camera view
         run: python generate.py
 
       - name: Commit
